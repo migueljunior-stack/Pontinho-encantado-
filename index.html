@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pontinho Encantado</title><style>
 body{font-family:Arial;margin:0;background:#fff0f6}
-header{background:linear-gradient(45deg,#000,#ff4da6);color:#fff;padding:15px;text-align:center}
+header{background:linear-gradient(45deg,#000,#ff4da6);color:#fff;padding:15px;text-align:center;font-size:22px}
 nav{display:flex;justify-content:center;gap:10px;background:#fff;padding:10px}
 nav button{padding:10px;border:none;border-radius:8px;background:#ff4da6;color:#fff}
 .container{padding:20px;display:flex;flex-wrap:wrap;gap:15px;justify-content:center}
@@ -65,28 +65,43 @@ const auth = getAuth(app);
 let carrinho=[];
 
 window.mostrar=function(sec){
- document.querySelectorAll(\"body > div\").forEach(d=>d.style.display=\"none\");
- document.getElementById(sec).style.display=\"block\";
+ document.getElementById("loja").style.display="none";
+ document.getElementById("login").style.display="none";
+ document.getElementById("personalizar").style.display="none";
+ document.getElementById("finalizar").style.display="none";
+
+ document.getElementById(sec).style.display="block";
 }
 
 window.cadastrar=function(){
- let email=document.getElementById(\"email\").value;
- let senha=document.getElementById(\"senhaLogin\").value;
- createUserWithEmailAndPassword(auth,email,senha).then(()=>alert(\"Conta criada\"));
+ let email=document.getElementById("email").value;
+ let senha=document.getElementById("senhaLogin").value;
+ createUserWithEmailAndPassword(auth,email,senha)
+ .then(()=>alert("Conta criada com sucesso"))
+ .catch(e=>alert(e.message));
 }
 
 window.entrar=function(){
- let email=document.getElementById(\"email\").value;
- let senha=document.getElementById(\"senhaLogin\").value;
- signInWithEmailAndPassword(auth,email,senha).then(()=>alert(\"Logado\"));
+ let email=document.getElementById("email").value;
+ let senha=document.getElementById("senhaLogin").value;
+ signInWithEmailAndPassword(auth,email,senha)
+ .then(()=>alert("Login realizado"))
+ .catch(e=>alert(e.message));
 }
 
 async function carregar(){
- let div=document.getElementById(\"loja\");
- const dados=await getDocs(collection(db,\"produtos\"));
+ let div=document.getElementById("loja");
+ div.innerHTML="";
+ const dados=await getDocs(collection(db,"produtos"));
  dados.forEach(doc=>{
   let p=doc.data();
-  div.innerHTML+=`<div class='produto'><img src='${p.imagem}'><h3>${p.nome}</h3><p>R$${p.preco}</p><button onclick=\"add('${p.nome}',${p.preco})\">Adicionar</button></div>`;
+  div.innerHTML+=`
+  <div class='produto'>
+   <img src='${p.imagem}'>
+   <h3>${p.nome}</h3>
+   <p>R$ ${p.preco}</p>
+   <button onclick="add('${p.nome}',${p.preco})">Adicionar</button>
+  </div>`;
  });
 }
 
@@ -96,29 +111,34 @@ window.add=function(nome,preco){
 }
 
 function atualizar(){
- let lista=document.getElementById(\"lista\");
- lista.innerHTML=\"\";
+ let lista=document.getElementById("lista");
+ lista.innerHTML="";
  let total=0;
- carrinho.forEach(i=>{lista.innerHTML+=`${i.nome} R$${i.preco}<br>`; total+=Number(i.preco);});
- document.getElementById(\"total\").innerText=total;
+ carrinho.forEach(i=>{
+  lista.innerHTML+=`${i.nome} - R$ ${i.preco}<br>`;
+  total+=Number(i.preco);
+ });
+ document.getElementById("total").innerText=total;
 }
 
 window.finalizar=async function(){
- let nome=document.getElementById(\"nome\").value;
- let endereco=document.getElementById(\"endereco\").value;
- let entrega=document.getElementById(\"entrega\").value;
+ let nome=document.getElementById("nome").value;
+ let endereco=document.getElementById("endereco").value;
+ let entrega=document.getElementById("entrega").value;
 
- await addDoc(collection(db,\"pedidos\"),{nome,endereco,entrega,carrinho});
+ await addDoc(collection(db,"pedidos"),{
+  nome,endereco,entrega,carrinho,total:document.getElementById("total").innerText
+ });
 
- window.open(`https://wa.me/5517997355401?text=Pedido realizado`);
+ window.open(`https://wa.me/5517997355401?text=Novo pedido realizado`);
 }
 
 window.personalizar=async function(){
- let nome=document.getElementById(\"pNome\").value;
- let cor=document.getElementById(\"pCor\").value;
- let detalhe=document.getElementById(\"pDetalhe\").value;
+ let nome=document.getElementById("pNome").value;
+ let cor=document.getElementById("pCor").value;
+ let detalhe=document.getElementById("pDetalhe").value;
 
- await addDoc(collection(db,\"personalizados\"),{nome,cor,detalhe});
+ await addDoc(collection(db,"personalizados"),{nome,cor,detalhe});
 
  window.open(`https://wa.me/5517997355401?text=Personalizado: ${nome} ${cor} ${detalhe}`);
 }
