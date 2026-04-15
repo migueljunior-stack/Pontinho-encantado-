@@ -13,7 +13,6 @@ img{width:100%;border-radius:10px}
 input,select,button{margin-top:8px;padding:10px;width:100%;border-radius:8px;border:none}
 button{background:#ff4da6;color:#fff}
 
-/* CARRINHO CORRIGIDO */
 #carrinho{
  position:fixed;
  right:-300px;
@@ -26,9 +25,9 @@ button{background:#ff4da6;color:#fff}
  transition:0.3s;
  z-index:1000;
 }
-</style></head><body><header>Pontinho Encantado 🎀</header><!-- BOTÃO DO CARRINHO --><button onclick="toggleCarrinho()" style="position:fixed;top:10px;right:10px;background:#ff4da6;color:#fff;border:none;padding:10px;border-radius:50%">
-🛒
-</button><nav>
+</style></head><body><header>Pontinho Encantado 🎀</header><button onclick="toggleCarrinho()" style="position:fixed;top:10px;right:10px;background:#ff4da6;color:#fff;border:none;padding:10px;border-radius:50%">🛒</button>
+
+<nav>
 <button onclick="mostrar('loja')">Loja</button>
 <button onclick="mostrar('login')">Login</button>
 <button onclick="mostrar('personalizar')">Personalizar</button>
@@ -39,6 +38,7 @@ button{background:#ff4da6;color:#fff}
 <input id="senhaLogin" type="password" placeholder="Senha">
 <button onclick="entrar()">Entrar</button>
 <button onclick="cadastrar()">Criar conta</button>
+<button onclick="loginGoogle()">Entrar com Google</button>
 </div><div id="personalizar" style="display:none;padding:20px">
 <h2>🎀 Personalizar</h2>
 <input id="pNome" placeholder="Produto">
@@ -62,7 +62,7 @@ button{background:#ff4da6;color:#fff}
 </div><script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAEYJ4F0veto2ra5Yh_T07G7WC1iZAvE78",
@@ -81,11 +81,7 @@ let carrinho=[];
 
 window.toggleCarrinho=function(){
  let c=document.getElementById("carrinho");
- if(c.style.right=="0px"){
-  c.style.right="-300px";
- }else{
-  c.style.right="0px";
- }
+ c.style.right = (c.style.right=="0px") ? "-300px" : "0px";
 }
 
 window.mostrar=function(sec){
@@ -93,7 +89,6 @@ window.mostrar=function(sec){
  document.getElementById("login").style.display="none";
  document.getElementById("personalizar").style.display="none";
  document.getElementById("finalizar").style.display="none";
-
  document.getElementById(sec).style.display="block";
 }
 
@@ -110,6 +105,13 @@ window.entrar=function(){
  let senha=document.getElementById("senhaLogin").value;
  signInWithEmailAndPassword(auth,email,senha)
  .then(()=>alert("Login feito"))
+ .catch(e=>alert(e.message));
+}
+
+window.loginGoogle=function(){
+ const provider = new GoogleAuthProvider();
+ signInWithPopup(auth, provider)
+ .then(()=>alert("Login com Google feito"))
  .catch(e=>alert(e.message));
 }
 
