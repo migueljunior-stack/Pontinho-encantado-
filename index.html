@@ -3,15 +3,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pontinho Encantado</title><style>
-body{font-family:Arial;margin:0;background:#fff0f6}
-header{background:linear-gradient(45deg,#000,#ff4da6);color:#fff;padding:15px;text-align:center;font-size:22px}
-nav{display:flex;justify-content:center;gap:10px;background:#fff;padding:10px}
-nav button{padding:10px;border:none;border-radius:8px;background:#ff4da6;color:#fff}
-.container{padding:20px;display:flex;flex-wrap:wrap;gap:15px;justify-content:center}
-.produto{background:#fff;padding:15px;border-radius:10px;width:200px}
+body{font-family:Arial;margin:0;background:#f5f5f5}
+header{background:#ff4da6;color:#fff;padding:15px;text-align:center;font-size:22px}
+
+nav{display:flex;justify-content:space-around;background:#fff;padding:10px}
+nav button{background:#ff4da6;color:#fff;border:none;padding:10px;border-radius:8px}
+
+.container{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:10px}
+.produto{background:#fff;padding:10px;border-radius:10px;text-align:center}
 img{width:100%;border-radius:10px}
-input,select,button{margin-top:8px;padding:10px;width:100%;border-radius:8px;border:none}
-button{background:#ff4da6;color:#fff}
+
+button{margin-top:5px;padding:8px;border:none;border-radius:5px;background:#ff4da6;color:#fff}
 
 #carrinho{
  position:fixed;
@@ -21,24 +23,25 @@ button{background:#ff4da6;color:#fff}
  height:100%;
  background:#fff;
  padding:10px;
- border-left:2px solid #ccc;
  transition:0.3s;
- z-index:1000;
+ overflow:auto;
 }
-</style></head><body><header>Pontinho Encantado 🎀</header><button onclick="toggleCarrinho()" style="position:fixed;top:10px;right:10px;background:#ff4da6;color:#fff;border:none;padding:10px;border-radius:50%">🛒</button>
+
+.item{display:flex;justify-content:space-between;margin-bottom:5px}
+</style></head><body><header>Pontinho Encantado 🛍️</header><button onclick="toggleCarrinho()" style="position:fixed;top:10px;right:10px">🛒</button>
 
 <nav>
 <button onclick="mostrar('loja')">Loja</button>
-<button onclick="mostrar('login')">Login</button>
+<button onclick="mostrar('login')">Conta</button>
 <button onclick="mostrar('personalizar')">Personalizar</button>
 <button onclick="mostrar('finalizar')">Finalizar</button>
 </nav><div id="loja" class="container"></div><div id="login" style="display:none;padding:20px">
-<h2>👤 Login</h2>
+<h2>Conta</h2>
 <input id="email" placeholder="Email">
-<input id="senhaLogin" type="password" placeholder="Senha">
+<input id="senha" type="password" placeholder="Senha">
 <button onclick="entrar()">Entrar</button>
 <button onclick="cadastrar()">Criar conta</button>
-<button onclick="loginGoogle()">Entrar com Google</button>
+<button onclick="google()">Google</button>
 </div><div id="personalizar" style="display:none;padding:20px">
 <h2>🎀 Personalizar</h2>
 <input id="pNome" placeholder="Produto">
@@ -46,93 +49,63 @@ button{background:#ff4da6;color:#fff}
 <input id="pDetalhe" placeholder="Detalhes">
 <button onclick="personalizar()">Enviar</button>
 </div><div id="finalizar" style="display:none;padding:20px">
-<h2>📦 Finalizar</h2>
+<h2>Finalizar</h2>
 <input id="nome" placeholder="Nome">
 <input id="endereco" placeholder="Endereço">
-<select id="entrega">
-<option>Retirada</option>
-<option>Entrega local</option>
-<option>Correios</option>
-</select>
 <button onclick="finalizar()">Confirmar</button>
 </div><div id="carrinho">
-<h3>🛒 Carrinho</h3>
+<h3>Carrinho</h3>
 <div id="lista"></div>
 <p>Total: R$ <span id="total">0</span></p>
 </div><script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAEYJ4F0veto2ra5Yh_T07G7WC1iZAvE78",
-  authDomain: "pontinho-encantado-1.firebaseapp.com",
-  projectId: "pontinho-encantado-1",
-  storageBucket: "pontinho-encantado-1.firebasestorage.app",
-  messagingSenderId: "272748549714",
-  appId: "1:272748549714:web:d5fef26fee5f872356b18b"
+const firebaseConfig={
+ apiKey:"AIzaSyAEY...",
+ authDomain:"pontinho-encantado-1.firebaseapp.com",
+ projectId:"pontinho-encantado-1"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+const auth=getAuth(app);
 
 let carrinho=[];
 
-window.toggleCarrinho=function(){
+window.toggleCarrinho=()=>{
  let c=document.getElementById("carrinho");
  c.style.right = (c.style.right=="0px") ? "-300px" : "0px";
 }
 
-window.mostrar=function(sec){
- document.getElementById("loja").style.display="none";
- document.getElementById("login").style.display="none";
- document.getElementById("personalizar").style.display="none";
- document.getElementById("finalizar").style.display="none";
+window.mostrar=(sec)=>{
+ ["loja","login","personalizar","finalizar"].forEach(id=>document.getElementById(id).style.display="none");
  document.getElementById(sec).style.display="block";
-}
-
-window.cadastrar=function(){
- let email=document.getElementById("email").value;
- let senha=document.getElementById("senhaLogin").value;
- createUserWithEmailAndPassword(auth,email,senha)
- .then(()=>alert("Conta criada"))
- .catch(e=>alert(e.message));
-}
-
-window.entrar=function(){
- let email=document.getElementById("email").value;
- let senha=document.getElementById("senhaLogin").value;
- signInWithEmailAndPassword(auth,email,senha)
- .then(()=>alert("Login feito"))
- .catch(e=>alert(e.message));
-}
-
-window.loginGoogle=function(){
- const provider = new GoogleAuthProvider();
- signInWithPopup(auth, provider)
- .then(()=>alert("Login com Google feito"))
- .catch(e=>alert(e.message));
 }
 
 async function carregar(){
  let div=document.getElementById("loja");
- div.innerHTML="";
  const dados=await getDocs(collection(db,"produtos"));
  dados.forEach(doc=>{
   let p=doc.data();
   div.innerHTML+=`
   <div class='produto'>
    <img src='${p.imagem}'>
-   <h3>${p.nome}</h3>
-   <p>R$ ${p.preco}</p>
-   <button onclick="add('${p.nome}',${p.preco})">Adicionar</button>
+   <p>${p.nome}</p>
+   <p>R$${p.preco}</p>
+   <button onclick="add('${p.nome}',${p.preco})">+</button>
   </div>`;
  });
 }
 
-window.add=function(nome,preco){
+window.add=(nome,preco)=>{
  carrinho.push({nome,preco});
+ atualizar();
+}
+
+window.remover=(i)=>{
+ carrinho.splice(i,1);
  atualizar();
 }
 
@@ -140,33 +113,49 @@ function atualizar(){
  let lista=document.getElementById("lista");
  lista.innerHTML="";
  let total=0;
- carrinho.forEach(i=>{
-  lista.innerHTML+=`${i.nome} - R$ ${i.preco}<br>`;
-  total+=Number(i.preco);
+
+ carrinho.forEach((item,i)=>{
+  lista.innerHTML+=`
+  <div class='item'>
+   ${item.nome} - ${item.preco}
+   <button onclick="remover(${i})">X</button>
+  </div>`;
+  total+=Number(item.preco);
  });
+
  document.getElementById("total").innerText=total;
 }
 
-window.finalizar=async function(){
+window.finalizar=async()=>{
  let nome=document.getElementById("nome").value;
  let endereco=document.getElementById("endereco").value;
- let entrega=document.getElementById("entrega").value;
 
- await addDoc(collection(db,"pedidos"),{
-  nome,endereco,entrega,carrinho,total:document.getElementById("total").innerText
- });
+ await addDoc(collection(db,"pedidos"),{nome,endereco,carrinho});
 
- window.open(`https://wa.me/5517997355401?text=Novo pedido realizado`);
+ alert("Pedido realizado!");
 }
 
-window.personalizar=async function(){
+window.personalizar=async()=>{
  let nome=document.getElementById("pNome").value;
  let cor=document.getElementById("pCor").value;
  let detalhe=document.getElementById("pDetalhe").value;
 
  await addDoc(collection(db,"personalizados"),{nome,cor,detalhe});
 
- window.open(`https://wa.me/5517997355401?text=Personalizado: ${nome} ${cor} ${detalhe}`);
+ alert("Pedido personalizado enviado!");
+}
+
+window.google=()=>{
+ const provider=new GoogleAuthProvider();
+ signInWithPopup(auth,provider);
+}
+
+window.entrar=()=>{
+ signInWithEmailAndPassword(auth,email.value,senha.value);
+}
+
+window.cadastrar=()=>{
+ createUserWithEmailAndPassword(auth,email.value,senha.value);
 }
 
 carregar();
